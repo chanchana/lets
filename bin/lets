@@ -1,0 +1,71 @@
+# lets
+# - create recipe for your command
+# chanchana wicha 2020
+
+version="0.0.1"
+
+file=$PWD"/.letsipe" # .letsipe file
+
+checkfile ()
+{
+    # check is file existed
+    if [ ! -f "$file" ]; then
+        echo "\".letsipe\" file not found in current directory. please create one."
+        echo ""
+        echo "> .letsipe file syntax"
+        echo "  NAME {"
+        echo "      COMMAND1"
+        echo "      COMMAND2"
+        echo "      COMMAND3"
+        echo "      ..."
+        echo "  }"
+        echo ""
+        echo "> .letsipe example"
+        echo "  run {"
+        echo "      cd folder"
+        echo "      gcc -o test test.c"
+        echo "      ./test"
+        echo "  }"
+        echo ""
+        echo "  default {"
+        echo "      echo \"hello\""
+        echo "  }"
+        echo ""
+        exit
+    fi
+}
+
+# Loop through arguments and process them
+for arg in "$@"
+do
+    case $arg in
+        -l|--list)
+        checkfile
+        while IFS= read line
+        do
+            [[ $line =~ .*{.* ]] && echo $line | cut -d'{' -f1
+        done <$file
+        exit
+        shift # Remove -l
+        ;;
+        -v|--version)
+        echo "lets version $version"
+        exit
+        shift # Remove -v
+        ;;
+    esac
+done
+
+checkfile
+
+[ ! -z $1 ] && command=$1 || command="default" # check if arg1 specified
+executing=0 # true -> start execute command
+reg="$command[[:space:]]*{" # matching the input command
+
+# read .letsipe file line by line
+while IFS= read line
+do
+    [ $executing = 1 ] && [[ $line =~ [[:space:]]*}[[:space:]]* ]] && exit # found } when executing -> exit
+    [ $executing = 1 ] && echo "EXECUTING $line" && eval $line # executing is true -> exuceute command
+	[[ $line =~ $reg ]] && executing=1 # found recipe for input command
+done <$file

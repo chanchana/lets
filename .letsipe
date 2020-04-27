@@ -1,0 +1,13 @@
+run {
+    cd test
+    gcc -o cfile cfile.c
+    ./cfile
+}
+
+say {
+    echo "hi"
+}
+
+default {
+    echo "letsipe example"
+}
